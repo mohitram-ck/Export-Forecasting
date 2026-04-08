@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
 
 
 def _create_sequences(data, look_back: int = 12):
@@ -35,12 +33,25 @@ def run_lstm_forecast(
     Lightweight LSTM model for educational/demo purposes.
     Not heavily tuned to keep Render build/run fast.
     """
+    # TensorFlow is optional in some deploy targets. If unavailable, return a
+    # deterministic fallback forecast so the app remains fully usable.
+    try:
+        from tensorflow.keras.models import Sequential
+        from tensorflow.keras.layers import LSTM, Dense
+        tensorflow_available = True
+    except Exception:
+        tensorflow_available = False
+
     series = np.array(values, dtype="float32").reshape(-1, 1)
     scaler = MinMaxScaler()
     scaled = scaler.fit_transform(series)
 
     look_back = 12
-    if len(scaled) <= look_back + steps:
+    if not tensorflow_available:
+        last_val = float(series[-1][0])
+        forecast_values = [last_val] * steps
+        metrics = {"mae": 0.0, "rmse": 0.0, "mape": 0.0, "accuracy": 0.0}
+    elif len(scaled) <= look_back + steps:
         # Fallback: if not enough data, just repeat last value
         last_val = float(series[-1][0])
         forecast_values = [last_val] * steps
