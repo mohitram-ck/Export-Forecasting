@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Export Forecasting Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+    <header class="top-nav">
+        <div class="nav-left">
+            <div class="logo-circle">EF</div>
+            <div class="logo-text">
+                <span class="app-title">Export Forecasting</span>
+                <span class="app-subtitle">ARIMA · LSTM · Hybrid</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <span class="welcome-text">Welcome, {{ username }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a>
+        </div>
+    </header>
+
+    <div class="notice-banner">
+        <span>Note: Data resets on server redeploy. For persistent storage, upgrade to a managed database (e.g. Render PostgreSQL).</span>
+    </div>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <button class="sidebar-item active" data-section="datasets">My Datasets</button>
+            <button class="sidebar-item" data-section="forecast">Run Forecast</button>
+            <button class="sidebar-item" data-section="history">Forecast History</button>
+            <button class="sidebar-item" data-section="compare">Compare Models</button>
+        </aside>
+
+        <main class="main-content">
+            <section id="section-datasets" class="section active">
+                <h2>My Datasets</h2>
+                <div id="upload-zone" class="upload-zone">
+                    <input type="file" id="file-input" accept=".csv" hidden />
+                    <div class="upload-inner">
+                        <p class="upload-title">Drag &amp; drop CSV here</p>
+                        <p class="upload-subtitle">or click to browse (max 5MB)</p>
+                    </div>
+                </div>
+                <div class="progress-wrapper" id="upload-progress-wrapper" style="display:none;">
+                    <div class="progress-bar" id="upload-progress-bar"></div>
+                </div>
+
+                <h3>Your uploaded datasets</h3>
+                <table class="table" id="datasets-table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Rows</th>
+                            <th>Date Range</th>
+                            <th>Uploaded At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section id="section-forecast" class="section">
+                <h2>Run Forecast</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dataset-select">Dataset</label>
+                        <select id="dataset-select">
+                            <option value="">Default Sample Data</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="model-select">Model</label>
+                        <select id="model-select">
+                            <option value="arima">ARIMA</option>
+                            <option value="lstm">LSTM</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="steps-range">Forecast Horizon (months)</label>
+                        <input type="range" id="steps-range" min="3" max="24" value="12" />
+                        <span id="steps-label">12</span>
+                    </div>
+                </div>
+                <button id="run-forecast-btn" type="button" class="btn btn-primary">
+                    <span class="btn-text">Generate Forecast</span>
+                    <span class="btn-spinner" id="forecast-spinner" style="display:none;"></span>
+                </button>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-label">MAE</span>
+                        <span class="metric-value" id="metric-mae">-</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">RMSE</span>
+                        <span class="metric-value" id="metric-rmse">-</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">MAPE</span>
+                        <span class="metric-value" id="metric-mape">-</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Accuracy</span>
+                        <span class="metric-value" id="metric-accuracy">-</span>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <canvas id="main-chart"></canvas>
+                </div>
+            </section>
+
+            <section id="section-history" class="section">
+                <h2>Forecast History</h2>
+                <table class="table" id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Model</th>
+                            <th>Dataset</th>
+                            <th>Horizon</th>
+                            <th>MAE</th>
+                            <th>RMSE</th>
+                            <th>Accuracy</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <p class="table-note">Showing up to 20 most recent forecasts.</p>
+            </section>
+
+            <section id="section-compare" class="section">
+                <h2>Compare Models</h2>
+                <p class="section-help">
+                    Compare ARIMA, LSTM, and Hybrid performance on the selected dataset.
+                    Use the same dataset and horizon as in "Run Forecast".
+                </p>
+                <button id="run-compare-btn" class="btn btn-secondary">Run Comparison</button>
+                <div id="compare-result" class="compare-result">
+                    <table class="table" id="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>MAE</th>
+                                <th>RMSE</th>
+                                <th>MAPE</th>
+                                <th>Accuracy</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div class="chart-card">
+                        <canvas id="compare-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+

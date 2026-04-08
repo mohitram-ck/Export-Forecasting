@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+database/app.db
+uploads/
+saved_models/*.pkl
+saved_models/*.h5
+saved_models/*.keras
+venv/
+

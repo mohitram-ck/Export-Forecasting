@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Export Forecasting - Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <script>
+        function validateRegisterForm(event) {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters long.');
+                event.preventDefault();
+                return false;
+            }
+            if (password !== confirm) {
+                alert('Passwords do not match.');
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+        window.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('register-form');
+            form.addEventListener('submit', validateRegisterForm);
+        });
+    </script>
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Forecast exports with ARIMA &amp; LSTM</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required minlength="3" maxlength="20" pattern="[A-Za-z0-9]+" />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="you@example.com" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="8" />
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required minlength="8" />
+                </div>
+
+                <button type="submit" class="btn btn-primary full-width">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Already have an account?</span>
+                <a href="{{ url_for('auth.login') }}">Login</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

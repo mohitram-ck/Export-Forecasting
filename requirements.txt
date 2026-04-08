@@ -1,0 +1,13 @@
+flask
+flask-cors
+flask-session
+flask-bcrypt
+gunicorn
+numpy
+pandas
+statsmodels
+scikit-learn
+tensorflow-cpu
+keras
+joblib
+
