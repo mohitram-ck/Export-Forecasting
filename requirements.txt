@@ -3,11 +3,10 @@ flask-cors
 flask-session
 flask-bcrypt
 gunicorn
-numpy
+numpy<2.0
 pandas
 statsmodels
 scikit-learn
-tensorflow-cpu
-keras
+tensorflow==2.15.1
 joblib
 
