@@ -108,15 +108,10 @@ function initUpload() {
         progressBar.style.width = "20%";
 
         try {
-            const resp = await fetch("/api/upload", {
+            const data = await apiFetch("/api/upload", {
                 method: "POST",
-                credentials: "include",
                 body: formData,
             });
-            const data = await resp.json();
-            if (!resp.ok) {
-                throw new Error(data.error || "Upload failed");
-            }
             progressBar.style.width = "100%";
             showToast(data.message || "Upload successful");
             await loadDatasets();
